@@ -1,0 +1,8 @@
+jwt:
+  secret: "DB8243984CDE219D2945A492B4767A4909ACD96AB6C109231E9FE8C79E1"
+  access:
+    expiration: 3600000
+    header: Authorization
+  refresh:
+    expiration: 1209600000
+    header: Authorization-refresh
