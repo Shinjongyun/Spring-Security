@@ -18,12 +18,13 @@ public enum ErrorCode implements ResponseStatus {
     FORBIDDEN(105,HttpStatus.FORBIDDEN.value(), "권한이 없습니다."),
     // Auth
     SECURITY_UNAUTHORIZED(600,HttpStatus.UNAUTHORIZED.value(), "인증 정보가 유효하지 않습니다"),
-    SECURITY_INVALID_TOKEN(601, HttpStatus.UNAUTHORIZED.value(), "토큰이 유효하지 않습니다."),
+    SECURITY_INVALID_TOKEN(601, HttpStatus.FORBIDDEN.value(), "토큰이 형식이 유효하지 않습니다."),
     SECURITY_INVALID_REFRESH_TOKEN(602, HttpStatus.UNAUTHORIZED.value(), "refresh token이 유효하지 않습니다."),
     SECURITY_INVALID_ACCESS_TOKEN(603, HttpStatus.UNAUTHORIZED.value(), "access token이 유효하지 않습니다."),
     SECURITY_EXPIRED_TOKEN(604, HttpStatus.UNAUTHORIZED.value(), "토큰이 만료되었습니다. "),
     SECURITY_ACCESS_DENIED(605, HttpStatus.UNAUTHORIZED.value(), "접근 권한이 없습니다."),
-    LOGIN_FAILED(606, BAD_REQUEST.value(), "비밀번호가 올바르지 않습니다.");
+    LOGIN_FAILED(606, BAD_REQUEST.value(), "비밀번호가 올바르지 않습니다."),
+    TOKEN_NOT_EXIST(607, BAD_REQUEST.value(), "토큰이 존재하지 않습니다.");
     @Getter
     private final int code;
     private final int httpStatus;

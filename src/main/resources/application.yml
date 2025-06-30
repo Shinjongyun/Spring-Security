@@ -6,3 +6,14 @@ jwt:
   refresh:
     expiration: 1209600000
     header: Authorization-refresh
+
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+kakao:
+  auth:
+    client-id: dc3741c4aaad93067048db400f8fff38
+    redirect-uri: http://localhost:8080/auth/login/kakao

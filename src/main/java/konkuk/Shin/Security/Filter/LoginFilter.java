@@ -1,24 +1,23 @@
-package konkuk.Shin.Auth.Filter;
-
-package konkuk.Shin.Jwt;
+package konkuk.Shin.Security.Filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import konkuk.Shin.Util.JwtUtil;
-import konkuk.Shin.domain.UserEntity;
-import konkuk.Shin.dto.LoginRequestDTO;
-import konkuk.Shin.dto.LoginResponseDTO;
-import konkuk.Shin.service.CustomUserDetails;
+import konkuk.Shin.Common.Util.ErrorResponseUtil;
+import konkuk.Shin.Security.Jwt.JwtUtil;
+import konkuk.Shin.request.LoginRequestDTO;
+import konkuk.Shin.response.status.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import konkuk.Shin.response.LoginResponseDTO;
 
 import java.io.IOException;
 
@@ -66,13 +65,13 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             throws IOException, ServletException {
 
         // 인증된 사용자 정보 획득
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String username = userDetails.getUsername();
-        String role = userDetails.getUser().getRole();
+        String role = userDetails.getRole();
 
         // JWT 생성
         String accessToken = jwtUtil.createAccessToken(username);
-        String refreshToken = jwtUtil.createRefreshToken();
+        String refreshToken = jwtUtil.createRefreshToken(userEmail);
 
         // refreshToken 저장 (ex: Redis 등)
         jwtUtil.storeRefreshToken(refreshToken, username);
@@ -93,16 +92,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
                                               AuthenticationException failed)
-            throws IOException, ServletException {
-
+            throws IOException {
         // 실패 응답 작성
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-
-        // 원하는 커스텀 에러 형식으로 작성 가능
-        response.getWriter().write(objectMapper.writeValueAsString(
-                new ErrorResponseDTO("LOGIN_FAILED", "이메일 또는 비밀번호가 잘못되었습니다.")
-        ));
+        ErrorResponseUtil.setErrorResponse(response, ErrorCode.LOGIN_FAILED);
     }
 }

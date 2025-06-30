@@ -1,15 +1,22 @@
 package konkuk.Shin.Controller;
 
+import konkuk.Shin.request.LoginRequestDTO;
 import konkuk.Shin.response.ApiResponse;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
+@RestController
 public class TestController {
 
     @GetMapping("/login")
-     public ApiResponse<Void> getPromiseManagementPage(
-            @RequestParam(value = "id", required = true) String id,
-            @RequestParam(value = "password", required = true) String password
+     public ApiResponse<Void> login(
+            @RequestBody LoginRequestDTO request) {
+        return ApiResponse.ok(null);
+    }
+
+    @GetMapping("/logout")
+    public ApiResponse<Void> logout(
     ) {
         return ApiResponse.ok(null);
     }

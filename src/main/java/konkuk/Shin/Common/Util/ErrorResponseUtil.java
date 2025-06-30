@@ -1,4 +1,4 @@
-package konkuk.Shin.Util;
+package konkuk.Shin.Common.Util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
