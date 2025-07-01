@@ -10,6 +10,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import konkuk.Shin.Common.enums.Role;
 import konkuk.Shin.Domain.AuthDto;
 import konkuk.Shin.Domain.CustomOAuth2User;
 import konkuk.Shin.Security.Jwt.JwtProvider;
