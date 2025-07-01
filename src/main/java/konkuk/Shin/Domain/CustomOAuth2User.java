@@ -32,16 +32,11 @@ public class CustomOAuth2User implements OAuth2User {
         authorities.add(new GrantedAuthority() {
             @Override
             public String getAuthority() {
-                //return Role.fromValue(memberPrincipal.getRole().toString()).toString();
                 log.info("[CustomOAuth2User] getAuthority 의 Role = " + memberPrincipal.getRole().toAuthority().toString());
-                //return Role.fromValue(memberPrincipal.getRole().toString()).toString();
-                //return memberPrincipal.getRole().toAuthority().toString();
                 return memberPrincipal.getRole().toAuthority().toString();
             }
         });
         return authorities;
-
-//        return authorities;
     }
 
     @Override

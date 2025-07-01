@@ -27,7 +27,6 @@ public class AuthDto implements MemberPrincipal {
         return AuthDto.builder()
                 .memberId(member.getId())
                 .providerId(auth.getProviderId())
-                .name(member.getNickname())
                 .email(member.getEmail())
                 .role(member.getRole())
                 .build();

@@ -1,4 +1,4 @@
-package konkuk.Shin.Common;
+package konkuk.Shin.Common.redis;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;

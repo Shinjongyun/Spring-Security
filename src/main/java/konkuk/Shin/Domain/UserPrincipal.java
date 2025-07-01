@@ -19,15 +19,6 @@ public class UserPrincipal implements UserDetails {
         this.authorities = authorities;
     }
 
-    public static UserPrincipal from(User user) {
-        return new UserPrincipal(
-                user.getId(),
-                user.getEmail(),
-                user.getPassword(),
-                user.getAuthorities() // 또는 직접 변환
-        );
-    }
-
     @Override
     public String getUsername() {
         return email;
