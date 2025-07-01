@@ -2,6 +2,7 @@ package konkuk.Shin.Oauth2.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import konkuk.Shin.Common.Util.AuthenticationUtil;
 import konkuk.Shin.Security.Jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
