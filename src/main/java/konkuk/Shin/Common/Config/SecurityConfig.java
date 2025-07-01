@@ -2,6 +2,7 @@ package konkuk.Shin.Common.Config;
 
 import jakarta.servlet.http.HttpServletRequest;
 import konkuk.Shin.Security.Filter.JwtAuthenticationFilter;
+import konkuk.Shin.Security.Filter.JwtExceptionHandlerFilter;
 import konkuk.Shin.Security.Handler.JwtAccessDeniedHandler;
 import konkuk.Shin.Security.Handler.JwtAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
@@ -13,8 +14,15 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
+
+/* 실행순서
+1. JwtExceptionHandlerFilter
+2. JwtAuthenticationFilter
+3. UsernamePasswordAuthenticationFilter
+*/
 
 @Configuration
 @EnableWebSecurity
@@ -52,6 +60,10 @@ public class SecurityConfig {
         http
                 .sessionManagement((session) -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        http
+                .addFilterBefore(new JwtExceptionHandlerFilter(), JwtAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         http
                 .exceptionHandling(ex -> ex
                     .authenticationEntryPoint(jwtAuthenticationEntryPoint())

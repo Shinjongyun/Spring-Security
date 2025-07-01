@@ -16,6 +16,7 @@ import java.nio.file.AccessDeniedException;
 
 import static konkuk.Shin.Common.Util.ErrorResponseUtil.setErrorResponse;
 
+// JWT 인증 필터에서 발생한 예외 처리 전담
 public class JwtExceptionHandlerFilter extends OncePerRequestFilter {
 
     @Override
