@@ -1,6 +1,8 @@
 package konkuk.Shin.Domain;
 
 import jakarta.persistence.*;
+import konkuk.Shin.Common.BaseEntity;
+import konkuk.Shin.Common.enums.Status;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -40,8 +42,8 @@ public class Member extends BaseEntity {
     @Column(nullable = false)
     private Status status;
 
-//    @OneToOne(mappedBy = "member")
-//    private Auth auth;
+    @OneToOne(mappedBy = "member")
+    private Auth auth;
 
     public static Member of(String email, Role role) {
         return Member.builder()
