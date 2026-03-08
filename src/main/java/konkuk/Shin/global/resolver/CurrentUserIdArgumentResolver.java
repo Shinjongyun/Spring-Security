@@ -1,6 +1,6 @@
 package konkuk.Shin.global.resolver;
 
-import konkuk.Shin.security.model.UserPrincipal;
+import konkuk.Shin.auth.security.domain.entity.UserPrincipal;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
