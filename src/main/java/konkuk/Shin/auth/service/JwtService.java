@@ -1,13 +1,13 @@
 package konkuk.Shin.auth.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.umust.dobonglife.domain.auth.dto.request.RefreshTokenRequest;
-import com.umust.dobonglife.domain.auth.dto.response.TokenResponse;
-import com.umust.dobonglife.domain.auth.exception.CustomAuthenticationException;
-import com.umust.dobonglife.domain.auth.exception.CustomJwtException;
-import com.umust.dobonglife.domain.auth.utils.JwtUtil;
-import com.umust.dobonglife.global.common.redis.RedisService;
-import com.umust.dobonglife.global.common.response.ErrorCode;
+import konkuk.Shin.auth.dto.request.RefreshTokenRequest;
+import konkuk.Shin.auth.dto.response.TokenResponse;
+import konkuk.Shin.security.exception.CustomAuthenticationException;
+import konkuk.Shin.security.exception.CustomJwtException;
+import konkuk.Shin.security.jwt.JwtUtil;
+import konkuk.Shin.global.redis.RedisService;
+import konkuk.Shin.global.error.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

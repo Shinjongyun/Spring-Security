@@ -1,10 +1,10 @@
 package konkuk.Shin.auth.controller;
 
-import com.umust.dobonglife.domain.auth.dto.request.RefreshTokenRequest;
-import com.umust.dobonglife.domain.auth.dto.response.TokenResponse;
-import com.umust.dobonglife.domain.auth.service.JwtService;
-import com.umust.dobonglife.global.common.resolver.CurrentUserId;
-import com.umust.dobonglife.global.common.response.BaseResponse;
+import konkuk.Shin.auth.dto.request.RefreshTokenRequest;
+import konkuk.Shin.auth.dto.response.TokenResponse;
+import konkuk.Shin.auth.service.JwtService;
+import konkuk.Shin.global.resolver.CurrentUserId;
+import konkuk.Shin.global.response.BaseResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
