@@ -29,6 +29,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -36,73 +37,40 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtStoreService jwtStoreService;
-    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
-
-    // 인증을 안해도 되니 토큰이 필요없는 URL들
-    public final static List<String> PASS_URIS = Arrays.asList(
-            "/api/users/signup",
-            "/api/auth/login/**",
-            "/login/oauth2/**"
-    );
-
-    private static final AntPathMatcher ANT = new AntPathMatcher();
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        try {
+        log.info("JWT Filter Request URI: {}", request.getRequestURI());
 
-            if (isPassUri(request.getRequestURI())) {
-                log.info("JWT Filter Passed (pass uri) : {}", request.getRequestURI());
-                filterChain.doFilter(request, response);
-                return;
-            }
+        Optional<String> optionalAccessToken = jwtTokenProvider.extractAccessToken(request);
 
-            // 엑세스 토큰이 없으면 Authentication도 없음 -> EntryPoint (401)
-            log.info("Request URI: {}", request.getRequestURI()); // 요청 URI 로깅
-            String accessToken = jwtTokenProvider.extractAccessToken(request)
-                    .orElseThrow(() -> new CustomAuthenticationException(ErrorCode.ACCESS_TOKEN_NOT_FOUND));
-
-            // 엑세스 토큰 유효성 검사
-            jwtTokenProvider.validateAccessToken(accessToken);
-
-            // 로그아웃 체크
-            jwtStoreService.checkBlacklistedToken(accessToken);
-
-            // 권한 리스트 생성
-            List<GrantedAuthority> authorities = Arrays.asList(new SimpleGrantedAuthority(jwtTokenProvider.getRole(accessToken)));
-            log.info("Granted Authorities : {}", authorities);
-            UserPrincipal principal = UserPrincipal.builder()
-                    .userId(jwtTokenProvider.getUserId(accessToken))
-                    .userName(jwtTokenProvider.getName(accessToken))
-                    .role(Role.fromRole(jwtTokenProvider.getRole(accessToken)))
-                    .provider(Provider.fromProvider(jwtTokenProvider.getProvider(accessToken)))
-                    .authorities(authorities)
-                    .build();
-            log.info("UserPrincipal.userId: {}", principal.getUserId());
-            log.info("UserPrincipal.userName: {}", principal.getUsername());
-            log.info("UserPrincipal.provider: {}", principal.getProvider());
-            log.info("UserPrincipal.role: {}", principal.getAuthorities().stream().findFirst().get().toString());
-
-            Authentication authToken = null;
-            if (Provider.LOCAL.getValue().equals(principal.getProvider().getValue())) {
-                authToken = new UsernamePasswordAuthenticationToken(principal, null, authorities);
-            }
-            else {
-                authToken = new OAuth2AuthenticationToken(principal, authorities, principal.getProvider().getValue());
-            }
-            SecurityContextHolder.getContext().setAuthentication(authToken);
-
-            log.info("Authentication set in SecurityContext: {}", SecurityContextHolder.getContext().getAuthentication());
-            log.info("Authorities in SecurityContext: {}", SecurityContextHolder.getContext().getAuthentication().getAuthorities());
-            log.info("JWT Filter Success : {}", request.getRequestURI());
+        // 토큰이 없으면 그냥 통과
+        if (optionalAccessToken.isEmpty()) {
             filterChain.doFilter(request, response);
-        } catch (AuthenticationException e) {
-            SecurityContextHolder.clearContext();
-            customAuthenticationEntryPoint.commence(request, response, e);
+            return;
         }
-    }
-    private boolean isPassUri(String uri) {
-        return PASS_URIS.stream().anyMatch(pattern -> ANT.match(pattern, uri));
+
+        String accessToken = optionalAccessToken.get();
+
+        // 토큰이 있으면 검증
+        jwtTokenProvider.validateAccessToken(accessToken);
+        jwtStoreService.checkBlacklistedToken(accessToken);
+
+        List<GrantedAuthority> authorities = List.of(
+                new SimpleGrantedAuthority(jwtTokenProvider.getRole(accessToken))
+        );
+        UserPrincipal principal = UserPrincipal.builder()
+                .userId(jwtTokenProvider.getUserId(accessToken))
+                .userName(jwtTokenProvider.getName(accessToken))
+                .role(Role.fromRole(jwtTokenProvider.getRole(accessToken)))
+                .provider(Provider.fromProvider(jwtTokenProvider.getProvider(accessToken)))
+                .authorities(authorities)
+                .build();
+        log.info("UserPrincipal.userId: {}", principal.getUserId());
+
+        Authentication authToken = new UsernamePasswordAuthenticationToken(principal, null, authorities);
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+        filterChain.doFilter(request, response);
     }
 }

@@ -89,7 +89,6 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests(auth -> auth
-                        // 로그인/헬스체크/정적리소스 등 필요하면 여기서 permitAll 추가
                         .requestMatchers(
                                 "/",
                                 "/error",
@@ -102,7 +101,7 @@ public class SecurityConfig {
                 );
 
         http
-                .addFilterBefore(jwtExceptionHandlerFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtExceptionHandlerFilter, LogoutFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAt(customLoginFilter, UsernamePasswordAuthenticationFilter.class);
 
