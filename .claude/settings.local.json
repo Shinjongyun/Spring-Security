@@ -7,7 +7,9 @@
       "Bash(cd \"/mnt/c/Users/tiger/OneDrive/바탕 화면/Spring-Security/src/main/java/konkuk/Shin/auth/service\" && rm -f CustomOAuth2UserService.java CustomUserDetailsService.java)",
       "Bash(cd \"/mnt/c/Users/tiger/OneDrive/바탕 화면/Spring-Security\" && ./gradlew build 2>&1 | tail -50)",
       "Bash(which java && java -version 2>&1 || echo \"No java found\")",
-      "Bash(cd \"/mnt/c/Users/tiger/OneDrive/바탕 화면/Spring-Security\" && JAVA_HOME=/home/shin/.jdks/jdk-21.0.2 ./gradlew compileJava -Porg.gradle.java.installations.fromEnv=JAVA_HOME 2>&1 | tail -30)"
+      "Bash(cd \"/mnt/c/Users/tiger/OneDrive/바탕 화면/Spring-Security\" && JAVA_HOME=/home/shin/.jdks/jdk-21.0.2 ./gradlew compileJava -Porg.gradle.java.installations.fromEnv=JAVA_HOME 2>&1 | tail -30)",
+      "Bash(cd \"/mnt/c/Users/tiger/OneDrive/바탕 화면/Spring-Security\" && find . -name \"*.yml\" -o -name \"*.yaml\" | xargs cat 2>/dev/null)",
+      "Bash(cd \"/mnt/c/Users/tiger/OneDrive/바탕 화면/Spring-Security\" && ./gradlew compileJava 2>&1 | tail -30)"
     ]
   }
 }
