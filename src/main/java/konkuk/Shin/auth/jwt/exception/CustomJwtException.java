@@ -1,4 +1,4 @@
-package konkuk.Shin.auth.security.exception;
+package konkuk.Shin.auth.jwt.exception;
 
 import konkuk.Shin.global.error.ErrorCode;
 import io.jsonwebtoken.JwtException;

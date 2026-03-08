@@ -4,7 +4,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import konkuk.Shin.auth.controller.dto.response.TokenResponse;
 import konkuk.Shin.auth.jwt.service.JwtStoreService;
 import konkuk.Shin.auth.jwt.provider.JwtTokenProvider;
-import konkuk.Shin.auth.security.exception.CustomJwtException;
 import konkuk.Shin.global.error.BusinessException;
 import konkuk.Shin.global.error.ErrorCode;
 import konkuk.Shin.user.service.UserService;

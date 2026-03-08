@@ -1,6 +1,6 @@
 package konkuk.Shin.auth.jwt.provider;
 
-import konkuk.Shin.auth.security.exception.CustomJwtException;
+import konkuk.Shin.auth.jwt.exception.CustomJwtException;
 import konkuk.Shin.global.error.ErrorCode;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

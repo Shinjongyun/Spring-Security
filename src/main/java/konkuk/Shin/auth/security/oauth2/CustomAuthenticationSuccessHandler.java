@@ -43,7 +43,6 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         // refresh token 저장
         jwtStoreService.storeRefreshToken(refreshToken, userId);
-        log.info("[CustomAuthenticationSuccessHandler], refreshToken={}", refreshToken);
 
         TokenResponse tokenResponse = TokenResponse.builder()
                 .accessToken(accessToken)

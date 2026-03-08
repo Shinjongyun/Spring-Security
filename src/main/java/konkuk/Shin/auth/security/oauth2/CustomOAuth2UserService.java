@@ -1,10 +1,12 @@
 package konkuk.Shin.auth.security.oauth2;
 
 import konkuk.Shin.auth.security.domain.constant.Provider;
-import konkuk.Shin.auth.security.domain.constant.Role;
 import konkuk.Shin.auth.security.domain.entity.UserPrincipal;
+import konkuk.Shin.auth.security.oauth2.dto.GoogleResponse;
+import konkuk.Shin.auth.security.oauth2.dto.KakaoResponse;
+import konkuk.Shin.auth.security.oauth2.dto.OAuth2Response;
 import konkuk.Shin.user.domain.entity.User;
-import konkuk.Shin.user.repository.UserRepository;
+import konkuk.Shin.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -19,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @Override
     @Transactional
@@ -31,7 +33,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         OAuth2Response oAuth2Response;
         log.info("oAuth2User.getAttributes() : {}", oAuth2User.getAttributes());
         switch (registrationId) {
-            case "naver" -> oAuth2Response = new NaverResponse(oAuth2User.getAttributes());
             case "kakao" -> oAuth2Response = new KakaoResponse(oAuth2User.getAttributes());
             case "google" -> oAuth2Response = new GoogleResponse(oAuth2User.getAttributes());
             default -> {
@@ -41,11 +42,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         Provider provider = oAuth2Response.getProvider();
         String providerId = oAuth2Response.getProvider().getValue() + "_" + oAuth2Response.getProviderId();
+        String email =  oAuth2Response.getEmail();
+        String name =  oAuth2Response.getName();
 
-        // 기존 Auth 존재 여부 확인
-        User user = userRepository.findByProviderId(providerId)
-                .orElseGet(() -> createUser(oAuth2Response, provider, providerId));
-
+        User user = userService.findOrCreateOAuthUser(provider, providerId, email, name);
         return UserPrincipal.builder()
                 .userId(user.getId())
                 .userName(user.getName())
@@ -53,17 +53,5 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 .provider(provider)
                 .authorities(oAuth2User.getAuthorities())
                 .build();
-    }
-
-    private User createUser(OAuth2Response oAuth2Response, Provider provider, String providerId) {
-
-        User user = User.builder()
-                .email(oAuth2Response.getEmail())
-                .name(oAuth2Response.getName())
-                .role(Role.MEMBER)
-                .provider(provider)
-                .providerId(providerId)
-                .build();
-        return userRepository.save(user);
     }
 }

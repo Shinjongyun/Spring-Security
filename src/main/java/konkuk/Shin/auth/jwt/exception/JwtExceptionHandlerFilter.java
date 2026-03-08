@@ -1,6 +1,5 @@
 package konkuk.Shin.auth.jwt.exception;
 
-import konkuk.Shin.auth.security.exception.CustomJwtException;
 import konkuk.Shin.global.error.BusinessException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

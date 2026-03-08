@@ -5,7 +5,7 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
-@JsonPropertyOrder({"success", "status", "message", "data"})
+@JsonPropertyOrder({"success", "code", "message", "data"})
 public class BaseResponse<T> {
 
     private final boolean success;

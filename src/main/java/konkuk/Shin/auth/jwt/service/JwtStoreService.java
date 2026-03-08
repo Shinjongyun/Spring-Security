@@ -1,7 +1,7 @@
 package konkuk.Shin.auth.jwt.service;
 
 import konkuk.Shin.auth.security.exception.CustomAuthenticationException;
-import konkuk.Shin.auth.security.exception.CustomJwtException;
+import konkuk.Shin.auth.jwt.exception.CustomJwtException;
 import konkuk.Shin.global.redis.RedisService;
 import konkuk.Shin.global.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -43,9 +43,6 @@ public class JwtStoreService {
     }
 
     public void deleteRefreshToken(String refreshToken){
-        if(refreshToken == null){
-            throw new CustomJwtException(ErrorCode.INVALID_REFRESH_TOKEN_TYPE);
-        }
         redisService.delete(REFRESH_TOKEN_KEY_PREFIX+refreshToken);
     }
 

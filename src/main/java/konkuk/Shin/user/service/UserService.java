@@ -1,7 +1,6 @@
 package konkuk.Shin.user.service;
 
-
-import jakarta.persistence.EntityNotFoundException;
+import konkuk.Shin.global.entity.BaseStatus;
 import konkuk.Shin.global.error.BusinessException;
 import konkuk.Shin.global.error.ErrorCode;
 import konkuk.Shin.auth.security.domain.constant.Provider;
@@ -15,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import konkuk.Shin.user.controller.dto.request.SignupRequest;
 
 @Slf4j
 @Service
@@ -22,15 +22,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final MailService mailService;
 
     @Transactional
     public void signUp(SignupRequest request) {
         if (isExistByEmail(request.getEmail())) {
             throw new BusinessException(ErrorCode.USER_DUPLICATE_EMAIL);
-        }
-        if (!"VERIFIED".equals(mailService.getStoredSignUpCode(request.getEmail()))) {
-            throw new BusinessException(ErrorCode.AUTHCODE_UNAUTHORIZED);
         }
         User user = User.builder()
                 .email(request.getEmail())
@@ -43,51 +39,16 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteAccount(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-
-        inValidFcmToken(userId);
-        userRepository.delete(user);
-        SecurityContextHolder.clearContext();
-    }
-
-    @Transactional
-    public void updateMyPassword(PasswordUpdateRequest request) {
-        User user = userRepository.findByEmailAndProvider(request.getEmail(), Provider.LOCAL)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-        if(user.getPassword() == null){
-            throw new BusinessException(ErrorCode.USER_IS_SOCIAL_LOGGED);
-        }
-        mailService.checkPasswordAuthCode(request.getEmail(), request.getAuthCode());
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-    }
-
-    public boolean validateOwner(Long userId, Long ownerId) {
-        if (!userId.equals(ownerId)) {
-            return false;
-        }
-        return true;
-    }
-
-    @Transactional
     public User findOrCreateOAuthUser(Provider provider, String providerUserId, String email, String name) {
         return userRepository.findByProviderAndProviderId(provider, providerUserId)
                 .orElseGet(() -> reactivateOrCreateOAuthUser(provider, providerUserId, email, name));
     }
 
     private User reactivateOrCreateOAuthUser(Provider provider, String providerId, String email, String name) {
-        // 탈퇴(soft-delete)된 유저가 재가입하는 경우 재활성화
+        // 소프트 delete로 탈퇴된 유저가 재가입하는 경우 재활성화
         return userRepository.findInactiveByProviderAndProviderId(provider.name(), providerId)
                 .map(inactiveUser -> {
                     inactiveUser.setStatus(BaseStatus.ACTIVE);
-                    inactiveUser.setEmail(email);
-                    inactiveUser.setBalance(0L);
-                    inactiveUser.setDeleteCount(0);
-                    inactiveUser.setBlocked(false);
-                    inactiveUser.setBlockedAt(null);
-                    inactiveUser.setFcmToken(null);
-                    inactiveUser.setReceivedAlarm(true);
                     return userRepository.save(inactiveUser);
                 })
                 .orElseGet(() -> createOAuthUserSafely(provider, providerId, email, name));
@@ -116,9 +77,8 @@ public class UserService {
         }
     }
 
-    public User findById(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 User 엔티티가 존재하지 않습니다: " + userId));
+    private boolean isExistByEmail(String email) {
+        return userRepository.existsByEmailAndProvider(email, Provider.LOCAL);
     }
 }
 

@@ -22,24 +22,19 @@ public enum ErrorCode{
 
     // Auth
     SECURITY_UNAUTHORIZED(600,HttpStatus.UNAUTHORIZED.value(), "인증 정보가 유효하지 않습니다"),
-    SECURITY_INVALID_TOKEN(602, HttpStatus.UNAUTHORIZED.value(), "유효하지 않은 token입니다."),
     ACCESS_TOKEN_NOT_FOUND(603, HttpStatus.UNAUTHORIZED.value(), "access token을 추출할 수 없습니다."),
     REFRESH_TOKEN_NOT_FOUND(604, HttpStatus.UNAUTHORIZED.value(), "refresh token을 추출할 수 없습니다."),
     SECURITY_ACCESS_DENIED(604, HttpStatus.FORBIDDEN.value(), "접근 권한이 없습니다."),
     INVALID_REFRESH_TOKEN_TYPE(605, HttpStatus.BAD_REQUEST.value(), "refresh token 타입이 유효하지 않습니다."),
     INVALID_ACCESS_TOKEN_TYPE(601, HttpStatus.UNAUTHORIZED.value(), "access token 타입이 유효하지 않습니다."),
-    MAIL_SEND_FAILED(606, HttpStatus.BAD_REQUEST.value(), "메일 전송에 실패했습니다."),
-    INVALID_EMAIL_CODE(607, HttpStatus.UNAUTHORIZED.value(), "인증 번호가 다릅니다."),
-    EXPIRED_EMAIL_CODE(608, HttpStatus.UNAUTHORIZED.value(), "인증 번호가 만료되었거나 없습니다."),
-    AUTHCODE_ALREADY_AUTHENTICATED(609, HttpStatus.BAD_REQUEST.value(), "이미 인증이 된 번호입니다."),
-    AUTHCODE_UNAUTHORIZED(610, HttpStatus.UNAUTHORIZED.value(), "이메일 인증을 하지 않았습니다."),
     EMPTY_AUTHORIZATION_HEADER(612, HttpStatus.BAD_REQUEST.value(),"Authorization 헤더가 존재하지 않습니다."),
     EXPIRED_ACCESS_TOKEN(613, HttpStatus.UNAUTHORIZED.value(), "이미 만료된 Access 토큰입니다."),
     UNSUPPORTED_TOKEN_TYPE(614, HttpStatus.UNAUTHORIZED.value(),"지원되지 않는 토큰 형식입니다."),
     MALFORMED_TOKEN_TYPE(615, HttpStatus.UNAUTHORIZED.value(),"인증 토큰이 올바르게 구성되지 않았습니다."),
     INVALID_SIGNATURE_JWT(616, HttpStatus.UNAUTHORIZED.value(), "인증 시그니처가 올바르지 않습니다"),
+    SECURITY_INVALID_TOKEN(602, HttpStatus.UNAUTHORIZED.value(), "유효하지 않은 토큰입니다."),
     INVALID_EMAIL_OR_PASSWORD(617, HttpStatus.UNAUTHORIZED.value(), "이메일 또는 비밀번호가 올바르지 않습니다."),
-    INVALID_PASSWORD(618, HttpStatus.UNAUTHORIZED.value(), "기존 비밀번호가 유효하지 않습니다");
+    DUPLICATED_LOGIN(621,HttpStatus.UNAUTHORIZED.value(), "다른 기기에서 로그인되어 현재 로그인이 종료되었습니다.");
 
     private final int code;
     private final int httpStatus;

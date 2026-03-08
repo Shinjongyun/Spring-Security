@@ -1,4 +1,4 @@
-package konkuk.Shin.auth.security.oauth2;
+package konkuk.Shin.auth.security.oauth2.dto;
 
 import konkuk.Shin.auth.security.domain.constant.Provider;
 

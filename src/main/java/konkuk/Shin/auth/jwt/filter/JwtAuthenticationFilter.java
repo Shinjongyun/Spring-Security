@@ -1,9 +1,9 @@
 package konkuk.Shin.auth.jwt.filter;
 
+import konkuk.Shin.auth.jwt.exception.JwtExceptionHandlerFilter;
 import konkuk.Shin.auth.jwt.provider.JwtTokenProvider;
 import konkuk.Shin.auth.security.domain.constant.Role;
 import konkuk.Shin.auth.security.exception.CustomAuthenticationException;
-import konkuk.Shin.auth.security.exception.CustomJwtException;
 import konkuk.Shin.auth.security.exception.handler.CustomAuthenticationEntryPoint;
 import konkuk.Shin.auth.security.domain.constant.Provider;
 import konkuk.Shin.auth.security.domain.entity.UserPrincipal;
@@ -38,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtStoreService jwtStoreService;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
-    // 인증을 안해도 되니 토큰이 필요없는 URL들 (에러: 로그인이 필요합니다)
+    // 인증을 안해도 되니 토큰이 필요없는 URL들
     public final static List<String> PASS_URIS = Arrays.asList(
             "/api/users/signup",
             "/api/auth/login/**",
@@ -61,7 +61,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // 엑세스 토큰이 없으면 Authentication도 없음 -> EntryPoint (401)
             log.info("Request URI: {}", request.getRequestURI()); // 요청 URI 로깅
             String accessToken = jwtTokenProvider.extractAccessToken(request)
-                    .orElseThrow(() -> new CustomAuthenticationException(ErrorCode.SECURITY_UNAUTHORIZED));
+                    .orElseThrow(() -> new CustomAuthenticationException(ErrorCode.ACCESS_TOKEN_NOT_FOUND));
 
             // 엑세스 토큰 유효성 검사
             jwtTokenProvider.validateAccessToken(accessToken);
@@ -85,12 +85,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.info("UserPrincipal.role: {}", principal.getAuthorities().stream().findFirst().get().toString());
 
             Authentication authToken = null;
-            if ("local".equals(principal.getProvider().getValue())) {
-                // 폼 로그인(자체 회원)
+            if (Provider.LOCAL.getValue().equals(principal.getProvider().getValue())) {
                 authToken = new UsernamePasswordAuthenticationToken(principal, null, authorities);
             }
             else {
-                // 소셜 로그인
                 authToken = new OAuth2AuthenticationToken(principal, authorities, principal.getProvider().getValue());
             }
             SecurityContextHolder.getContext().setAuthentication(authToken);
@@ -100,6 +98,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.info("JWT Filter Success : {}", request.getRequestURI());
             filterChain.doFilter(request, response);
         } catch (AuthenticationException e) {
+            SecurityContextHolder.clearContext();
             customAuthenticationEntryPoint.commence(request, response, e);
         }
     }
