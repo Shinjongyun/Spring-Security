@@ -35,21 +35,16 @@ public class AuthService {
     private Long REFRESH_TOKEN_EXPIRED_IN;
 
     @Transactional
-    public void logout(HttpServletRequest request, HttpServletResponse response) {
+    public void logout(HttpServletRequest request, HttpServletResponse response, Long userId) {
         // 엑세스 토큰 추출 후 검증
         String accessToken = jwtTokenProvider.extractAccessToken(request)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ACCESS_TOKEN_NOT_FOUND));
         jwtTokenProvider.validateAccessToken(accessToken);
 
-        // 리프레쉬 토큰 쿠키에서 추출 후 검증
-        String refreshToken = CookieUtil.getRefreshTokenCookie(request)
-                .orElseThrow(() -> new BusinessException(ErrorCode.REFRESH_TOKEN_NOT_FOUND));
-        jwtTokenProvider.validateRefreshToken(refreshToken);
-
-        // 리프레쉬 토큰 삭제
-        jwtService.deleteRefreshToken(refreshToken);
         // 엑세스 토큰 블랙리스트화
         jwtService.invalidAccessToken(accessToken);
+        // 유저 키 삭제 (refresh 무효화)
+        jwtService.deleteRefreshToken(userId);
         // 쿠키 삭제
         CookieUtil.deleteRefreshTokenCookie(response);
     }
@@ -62,18 +57,19 @@ public class AuthService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.REFRESH_TOKEN_NOT_FOUND));
         Claims claims = jwtTokenProvider.validateRefreshToken(refreshToken);
 
-        // Claims에서 값 추출 후 새로운 Token 발급
+        // Redis에 저장된 해시와 비교 (소유권 검증)
         Long tokenUserId = jwtTokenProvider.getUserId(claims);
+        jwtService.validateRefreshTokenOwnership(refreshToken, tokenUserId);
+
+        // Claims에서 값 추출 후 새로운 Token 발급
         String provider = jwtTokenProvider.getProvider(claims);
         String role = jwtTokenProvider.getRole(claims);
         String name = jwtTokenProvider.getName(claims);
         String reissuedAccessToken = jwtTokenProvider.createAccessToken(tokenUserId, provider, role, name);
         String reissuedRefreshToken = jwtTokenProvider.createRefreshToken(tokenUserId, provider, name);
 
-        // 새로운 Refresh 저장
-        jwtService.storeRefreshToken(reissuedRefreshToken, userId);
-        // 기존 Refresh Token 폐기
-        jwtService.deleteRefreshToken(refreshToken);
+        // 기존 삭제 → 새 Refresh 저장 (rotateRefreshToken은 덮어쓰기)
+        jwtService.rotateRefreshToken(reissuedRefreshToken, userId);
         // 새 Refresh Token 쿠키에 저장
         CookieUtil.addRefreshTokenCookie(response, reissuedRefreshToken, REFRESH_TOKEN_EXPIRED_IN);
 

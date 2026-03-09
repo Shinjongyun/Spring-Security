@@ -15,25 +15,25 @@ public class RedisService {
     private final RedisTemplate<String, String> redisTemplate;
 
     public void setValues(String key, String data, Duration duration) {
-        ValueOperations<String, String> values = redisTemplate.opsForValue();
-        values.set(key, data, duration);
+        redisTemplate.opsForValue().set(key, data, duration);
     }
 
-    @Transactional(readOnly = true)
+    /**
+     * SETNX + EX 원자 처리
+     * 키가 없을 때만 저장하고 true 반환, 이미 있으면 false 반환
+     */
+    public boolean setIfAbsent(String key, String data, Duration duration) {
+        Boolean result = redisTemplate.opsForValue().setIfAbsent(key, data, duration);
+        return Boolean.TRUE.equals(result);
+    }
+
     public String getValues(String key) {
-        ValueOperations<String, String> values = redisTemplate.opsForValue();
-        if (values.get(key) == null) {
-            return "false";
-        }
-        return (String) values.get(key);
+        String value = redisTemplate.opsForValue().get(key);
+        return value != null ? value : "false";
     }
 
     public void delete(String key) {
         redisTemplate.delete(key);
-    }
-
-    protected boolean checkExistsValue(String value) {
-        return !value.equals("false");
     }
 
 }

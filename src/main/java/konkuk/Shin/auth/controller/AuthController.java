@@ -50,8 +50,10 @@ public class AuthController {
             description = "로그아웃에 성공하였습니다."
     )
     @PostMapping("/logout")
-    public BaseResponse<Void> logout(HttpServletRequest request, HttpServletResponse response){
-        authService.logout(request, response);
+    public BaseResponse<Void> logout(HttpServletRequest request,
+                                     HttpServletResponse response,
+                                     @CurrentUserId Long userId){
+        authService.logout(request, response, userId);
         return BaseResponse.ok(null);
     }
 

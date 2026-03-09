@@ -3,6 +3,7 @@ package konkuk.Shin.auth.security.oauth2;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import konkuk.Shin.auth.controller.dto.response.TokenResponse;
 import konkuk.Shin.auth.jwt.service.JwtService;
+import konkuk.Shin.auth.security.exception.CustomAuthenticationException;
 import konkuk.Shin.auth.security.util.AuthenticationUtil;
 import konkuk.Shin.auth.security.util.CookieUtil;
 import konkuk.Shin.auth.jwt.provider.JwtTokenProvider;
@@ -18,6 +19,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+
+import static konkuk.Shin.auth.security.util.AuthErrorResponseUtil.setErrorResponse;
 
 @Slf4j
 @Component
@@ -46,8 +49,15 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String accessToken = jwtTokenProvider.createAccessToken(userId, provider, role, userName);
         String refreshToken = jwtTokenProvider.createRefreshToken(userId, provider, userName);
 
-        // refresh token Redis와 쿠키에 저장
-        jwtService.storeRefreshToken(refreshToken, userId);
+        // refresh token Redis에 저장 (SETNX → 이미 로그인 중이면 거부)
+        try {
+            jwtService.storeRefreshToken(refreshToken, userId);
+        } catch (CustomAuthenticationException e) {
+            setErrorResponse(response, e.getErrorCode());
+            return;
+        }
+
+        // 쿠키에 저장
         CookieUtil.addRefreshTokenCookie(response, refreshToken, REFRESH_TOKEN_EXPIRED_IN);
 
         TokenResponse tokenResponse = TokenResponse.builder()
