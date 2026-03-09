@@ -2,7 +2,7 @@ package konkuk.Shin.auth.security.oauth2;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import konkuk.Shin.auth.controller.dto.response.TokenResponse;
-import konkuk.Shin.auth.jwt.service.JwtStoreService;
+import konkuk.Shin.auth.jwt.service.JwtService;
 import konkuk.Shin.auth.security.util.AuthenticationUtil;
 import konkuk.Shin.auth.jwt.provider.JwtTokenProvider;
 import konkuk.Shin.global.response.BaseResponse;
@@ -24,7 +24,7 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     private final AuthenticationUtil authenticationUtil;
     private final JwtTokenProvider jwtTokenProvider;
-    private final JwtStoreService jwtStoreService;
+    private final JwtService jwtService;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -42,7 +42,7 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String refreshToken = jwtTokenProvider.createRefreshToken(userId, provider, role);
 
         // refresh token 저장
-        jwtStoreService.storeRefreshToken(refreshToken, userId);
+        jwtService.storeRefreshToken(refreshToken, userId);
 
         TokenResponse tokenResponse = TokenResponse.builder()
                 .accessToken(accessToken)

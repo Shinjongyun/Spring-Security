@@ -3,7 +3,7 @@ package konkuk.Shin.auth.service;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import konkuk.Shin.auth.controller.dto.response.TokenResponse;
-import konkuk.Shin.auth.jwt.service.JwtStoreService;
+import konkuk.Shin.auth.jwt.service.JwtService;
 import konkuk.Shin.auth.jwt.provider.JwtTokenProvider;
 import konkuk.Shin.global.error.BusinessException;
 import konkuk.Shin.global.error.ErrorCode;
@@ -24,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final JwtStoreService jwtStoreService;
+    private final JwtService jwtService;
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -41,9 +41,9 @@ public class AuthService {
         jwtTokenProvider.validateRefreshToken(refreshToken);
 
         // 리프레쉬 토큰 삭제
-        jwtStoreService.deleteRefreshToken(refreshToken);
+        jwtService.deleteRefreshToken(refreshToken);
         // 엑세스 토큰 블랙리스트화
-        jwtStoreService.invalidAccessToken(accessToken);
+        jwtService.invalidAccessToken(accessToken);
     }
 
     @Transactional
@@ -63,9 +63,9 @@ public class AuthService {
         String reissuedRefreshToken = jwtTokenProvider.createRefreshToken(tokenUserId, provider, name);
 
         // 새로운 Refresh 저장
-        jwtStoreService.storeRefreshToken(reissuedRefreshToken, userId);
+        jwtService.storeRefreshToken(reissuedRefreshToken, userId);
         // 기존 Refresh Token 폐기
-        jwtStoreService.deleteRefreshToken(refreshToken);
+        jwtService.deleteRefreshToken(refreshToken);
 
         return TokenResponse.builder()
                 .accessToken(reissuedAccessToken)

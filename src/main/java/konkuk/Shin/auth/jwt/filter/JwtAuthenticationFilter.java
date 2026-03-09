@@ -5,7 +5,7 @@ import konkuk.Shin.auth.jwt.provider.JwtTokenProvider;
 import konkuk.Shin.auth.security.domain.constant.Role;
 import konkuk.Shin.auth.security.domain.constant.Provider;
 import konkuk.Shin.auth.security.domain.entity.UserPrincipal;
-import konkuk.Shin.auth.jwt.service.JwtStoreService;
+import konkuk.Shin.auth.jwt.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,7 +29,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
-    private final JwtStoreService jwtStoreService;
+    private final JwtService jwtService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -48,7 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 토큰 검증 + Claims 한 번만 파싱
         Claims claims = jwtTokenProvider.validateAccessToken(accessToken);
-        jwtStoreService.checkBlacklistedToken(accessToken);
+        jwtService.checkBlacklistedToken(accessToken);
 
         String role = jwtTokenProvider.getRole(claims);
         List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));

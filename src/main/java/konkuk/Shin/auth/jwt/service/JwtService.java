@@ -1,7 +1,6 @@
 package konkuk.Shin.auth.jwt.service;
 
 import konkuk.Shin.auth.security.exception.CustomAuthenticationException;
-import konkuk.Shin.auth.jwt.exception.CustomJwtException;
 import konkuk.Shin.global.redis.RedisService;
 import konkuk.Shin.global.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -12,13 +11,13 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 
 /**
- * [JwtStoreService]
+ * [JwtService]
  * JWT Redis에 저장 및 삭제 로직 담당
  * **/
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class JwtStoreService {
+public class JwtService {
 
     @Value("${jwt.access.expiration}")
     private Long ACCESS_TOKEN_EXPIRED_IN;
