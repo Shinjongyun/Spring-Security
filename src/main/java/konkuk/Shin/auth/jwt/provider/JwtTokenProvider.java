@@ -44,32 +44,37 @@ public class JwtTokenProvider {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public Long getUserId(String token) {
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("userId", Long.class);
+    /**
+     * 토큰을 한 번만 파싱하여 Claims 객체를 반환
+     * 이후 getter 메서드들은 이 Claims를 재사용
+     */
+    public Claims getClaims(String token) {
+        return Jwts.parser().verifyWith(secretKey).build()
+                .parseSignedClaims(token).getPayload();
     }
 
-    public String getProvider(String token) {
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("provider", String.class);
+    public Long getUserId(Claims claims) {
+        return claims.get("userId", Long.class);
     }
 
-    public String getRole(String token) {
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("role", String.class);
+    public String getProvider(Claims claims) {
+        return claims.get("provider", String.class);
     }
 
-    public String getTokenType(String token) {
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("tokenType", String.class);
+    public String getRole(Claims claims) {
+        return claims.get("role", String.class);
     }
 
-    public String getEmail(String token){
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("email", String.class);
+    public String getTokenType(Claims claims) {
+        return claims.get("tokenType", String.class);
     }
 
-    public String getName(String token){
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("name", String.class);
+    public String getEmail(Claims claims) {
+        return claims.get("email", String.class);
     }
 
-    public Boolean isTokenExpired(String token) {
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getExpiration().before(new Date());
+    public String getName(Claims claims) {
+        return claims.get("name", String.class);
     }
 
     public String createAccessToken(Long userId, String provider, String role, String name) {
@@ -91,7 +96,7 @@ public class JwtTokenProvider {
         return Jwts.builder()
                 .claim("tokenType", "refresh")
                 .claim("userId", userId)
-                .claim("providerId", provider)
+                .claim("provider", provider)
                 .claim("name", name)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRED_IN))
@@ -99,25 +104,33 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public void validateAccessToken(String accessToken) {
-        validateToken(accessToken);
+    /**
+     * Access 토큰 검증 후 Claims 반환 (파싱 1회로 통합)
+     */
+    public Claims validateAccessToken(String accessToken) {
+        Claims claims = validateToken(accessToken);
 
-        if (!"access".equals(getTokenType(accessToken))) {
+        if (!"access".equals(getTokenType(claims))) {
             throw new CustomJwtException(ErrorCode.INVALID_ACCESS_TOKEN_TYPE);
         }
+        return claims;
     }
 
-    public void validateRefreshToken(String refreshToken) {
-        validateToken(refreshToken);
+    /**
+     * Refresh 토큰 검증 후 Claims 반환 (파싱 1회로 통합)
+     */
+    public Claims validateRefreshToken(String refreshToken) {
+        Claims claims = validateToken(refreshToken);
 
-        if (!"refresh".equals(getTokenType(refreshToken))) {
+        if (!"refresh".equals(getTokenType(claims))) {
             throw new CustomJwtException(ErrorCode.INVALID_REFRESH_TOKEN_TYPE);
         }
+        return claims;
     }
 
-    private void validateToken(String token) {
+    private Claims validateToken(String token) {
         try {
-            Jwts.parser()
+            return Jwts.parser()
                     .verifyWith(secretKey)
                     .build()
                     .parseSignedClaims(token)

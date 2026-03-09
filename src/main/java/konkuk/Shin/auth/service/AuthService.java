@@ -1,5 +1,6 @@
 package konkuk.Shin.auth.service;
 
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import konkuk.Shin.auth.controller.dto.response.TokenResponse;
 import konkuk.Shin.auth.jwt.service.JwtStoreService;
@@ -48,14 +49,18 @@ public class AuthService {
     @Transactional
     public TokenResponse reissueTokens(HttpServletRequest request, Long userId) {
 
-        // 리프레쉬 토큰 추출 후 검증
+        // 리프레쉬 토큰 추출 후 검증 + Claims 한 번만 파싱
         String refreshToken = jwtTokenProvider.extractRefreshToken(request)
                 .orElseThrow(() -> new BusinessException(ErrorCode.REFRESH_TOKEN_NOT_FOUND));
-        jwtTokenProvider.validateRefreshToken(refreshToken);
+        Claims claims = jwtTokenProvider.validateRefreshToken(refreshToken);
 
-        // 새로운 Token 발급
-        String reissuedAccessToken = jwtTokenProvider.createAccessToken(jwtTokenProvider.getUserId(refreshToken), jwtTokenProvider.getProvider(refreshToken), jwtTokenProvider.getRole(refreshToken), jwtTokenProvider.getName(refreshToken));
-        String reissuedRefreshToken = jwtTokenProvider.createRefreshToken(jwtTokenProvider.getUserId(refreshToken), jwtTokenProvider.getProvider(refreshToken), jwtTokenProvider.getName(refreshToken));
+        // Claims에서 값 추출 후 새로운 Token 발급
+        Long tokenUserId = jwtTokenProvider.getUserId(claims);
+        String provider = jwtTokenProvider.getProvider(claims);
+        String role = jwtTokenProvider.getRole(claims);
+        String name = jwtTokenProvider.getName(claims);
+        String reissuedAccessToken = jwtTokenProvider.createAccessToken(tokenUserId, provider, role, name);
+        String reissuedRefreshToken = jwtTokenProvider.createRefreshToken(tokenUserId, provider, name);
 
         // 새로운 Refresh 저장
         jwtStoreService.storeRefreshToken(reissuedRefreshToken, userId);

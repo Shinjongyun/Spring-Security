@@ -1,14 +1,11 @@
 package konkuk.Shin.auth.jwt.filter;
 
-import konkuk.Shin.auth.jwt.exception.JwtExceptionHandlerFilter;
+import io.jsonwebtoken.Claims;
 import konkuk.Shin.auth.jwt.provider.JwtTokenProvider;
 import konkuk.Shin.auth.security.domain.constant.Role;
-import konkuk.Shin.auth.security.exception.CustomAuthenticationException;
-import konkuk.Shin.auth.security.exception.handler.CustomAuthenticationEntryPoint;
 import konkuk.Shin.auth.security.domain.constant.Provider;
 import konkuk.Shin.auth.security.domain.entity.UserPrincipal;
 import konkuk.Shin.auth.jwt.service.JwtStoreService;
-import konkuk.Shin.global.error.ErrorCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,17 +14,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Component;
-import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,18 +46,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String accessToken = optionalAccessToken.get();
 
-        // 토큰이 있으면 검증
-        jwtTokenProvider.validateAccessToken(accessToken);
+        // 토큰 검증 + Claims 한 번만 파싱
+        Claims claims = jwtTokenProvider.validateAccessToken(accessToken);
         jwtStoreService.checkBlacklistedToken(accessToken);
 
-        List<GrantedAuthority> authorities = List.of(
-                new SimpleGrantedAuthority(jwtTokenProvider.getRole(accessToken))
-        );
+        String role = jwtTokenProvider.getRole(claims);
+        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
         UserPrincipal principal = UserPrincipal.builder()
-                .userId(jwtTokenProvider.getUserId(accessToken))
-                .userName(jwtTokenProvider.getName(accessToken))
-                .role(Role.fromRole(jwtTokenProvider.getRole(accessToken)))
-                .provider(Provider.fromProvider(jwtTokenProvider.getProvider(accessToken)))
+                .userId(jwtTokenProvider.getUserId(claims))
+                .userName(jwtTokenProvider.getName(claims))
+                .role(Role.fromRole(role))
+                .provider(Provider.fromProvider(jwtTokenProvider.getProvider(claims)))
                 .authorities(authorities)
                 .build();
         log.info("UserPrincipal.userId: {}", principal.getUserId());
