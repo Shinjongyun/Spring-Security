@@ -5,31 +5,23 @@ import konkuk.Shin.auth.security.exception.handler.CustomAccessDeniedHandler;
 import konkuk.Shin.auth.security.exception.handler.CustomAuthenticationEntryPoint;
 import konkuk.Shin.auth.jwt.filter.JwtAuthenticationFilter;
 import konkuk.Shin.auth.jwt.exception.JwtExceptionHandlerFilter;
-import konkuk.Shin.auth.security.exception.handler.CustomSessionExpiredStrategy;
-import konkuk.Shin.auth.security.local.login.CustomAuthenticationProvider;
 import konkuk.Shin.auth.security.exception.handler.CustomJsonAuthenticationFailureHandler;
 import konkuk.Shin.auth.security.local.login.CustomLoginFilter;
 import konkuk.Shin.auth.security.oauth2.CustomAuthenticationSuccessHandler;
 import konkuk.Shin.auth.security.oauth2.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
-import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
@@ -46,7 +38,6 @@ public class SecurityConfig {
     private final ObjectMapper objectMapper;
     private final AuthenticationConfiguration configuration;
     private final CustomOAuth2UserService customOAuth2UserService;
-    private final CustomSessionExpiredStrategy customSessionExpiredStrategy;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -80,11 +71,7 @@ public class SecurityConfig {
                 .httpBasic(b -> b.disable())
                 .formLogin(fl -> fl.disable())
                 .sessionManagement(sm -> sm
-                        .sessionFixation(sf -> sf.changeSessionId())
-                        .maximumSessions(1)
-                        .maxSessionsPreventsLogin(false)
-                        .expiredSessionStrategy(customSessionExpiredStrategy)
-                        .sessionRegistry(sessionRegistry())
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 );
 
         http
@@ -120,13 +107,4 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @Bean
-    public SessionRegistry sessionRegistry() {
-        return new SessionRegistryImpl();
-    }
-
-    @Bean
-    public static ServletListenerRegistrationBean<HttpSessionEventPublisher> httpSessionEventPublisher() {
-        return new ServletListenerRegistrationBean<>(new HttpSessionEventPublisher());
-    }
 }
