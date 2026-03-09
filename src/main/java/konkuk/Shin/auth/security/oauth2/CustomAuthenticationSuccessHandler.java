@@ -4,12 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import konkuk.Shin.auth.controller.dto.response.TokenResponse;
 import konkuk.Shin.auth.jwt.service.JwtService;
 import konkuk.Shin.auth.security.util.AuthenticationUtil;
+import konkuk.Shin.auth.security.util.CookieUtil;
 import konkuk.Shin.auth.jwt.provider.JwtTokenProvider;
 import konkuk.Shin.global.response.BaseResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -27,6 +29,9 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final JwtService jwtService;
     private final ObjectMapper objectMapper;
 
+    @Value("${jwt.refresh.expiration}")
+    private Long REFRESH_TOKEN_EXPIRED_IN;
+
     @Override
     @Transactional
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
@@ -39,14 +44,14 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         // 토큰 생성
         String accessToken = jwtTokenProvider.createAccessToken(userId, provider, role, userName);
-        String refreshToken = jwtTokenProvider.createRefreshToken(userId, provider, role);
+        String refreshToken = jwtTokenProvider.createRefreshToken(userId, provider, userName);
 
-        // refresh token 저장
+        // refresh token Redis와 쿠키에 저장
         jwtService.storeRefreshToken(refreshToken, userId);
+        CookieUtil.addRefreshTokenCookie(response, refreshToken, REFRESH_TOKEN_EXPIRED_IN);
 
         TokenResponse tokenResponse = TokenResponse.builder()
                 .accessToken(accessToken)
-                .refreshToken(refreshToken)
                 .build();
         writeResponse(response, BaseResponse.ok(tokenResponse));
     }

@@ -58,10 +58,10 @@ jwt:
   secret: ${JWT_SECRET_KEY}
   access:
     expiration: ${JWT_ACCESS_EXPIRED_IN}
-    header: Authorization
+    header: ${JWT_ACCESS_TOKEN_HEADER}
   refresh:
     expiration: ${JWT_REFRESH_EXPIRED_IN}
-    header: Authorization-refresh
+    cookie-name: ${JWT_REFRESH_COOKIE_NAME}
 
 # Swagger 설정
 springdoc:

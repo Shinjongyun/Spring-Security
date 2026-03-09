@@ -35,8 +35,6 @@ public class JwtTokenProvider {
     @Value("${jwt.access.header}")
     private String ACCESS_HEADER;
 
-    @Value("${jwt.refresh.header}")
-    private String REFRESH_HEADER;
 
     public final String BEARER_PREFIX = "Bearer ";
 
@@ -156,9 +154,4 @@ public class JwtTokenProvider {
                 .map(accessToken -> accessToken.replace(BEARER_PREFIX, ""));
     }
 
-    public Optional<String> extractRefreshToken(HttpServletRequest request) {
-        return Optional.ofNullable(request.getHeader(REFRESH_HEADER))
-                .filter(refreshToken -> refreshToken.startsWith(BEARER_PREFIX))
-                .map(refreshToken -> refreshToken.replace(BEARER_PREFIX, ""));
-    }
 }

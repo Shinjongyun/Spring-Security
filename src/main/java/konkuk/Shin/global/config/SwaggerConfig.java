@@ -31,20 +31,12 @@ public class SwaggerConfig {
                 .description("로컬 개발 서버"));
 
         Components components = new Components()
-                // ✅ Access Token (Authorization: Bearer <token>)
                 .addSecuritySchemes("BearerAuth",
                         new SecurityScheme()
                                 .type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer")
                                 .bearerFormat("JWT")
-                                .description("Access Token: Authorization 헤더에 Bearer {accessToken}"))
-                // ✅ Refresh Token (Authorization-refresh: Bearer <token>)
-                .addSecuritySchemes("RefreshAuth",
-                        new SecurityScheme()
-                                .type(SecurityScheme.Type.APIKEY)
-                                .in(SecurityScheme.In.HEADER)
-                                .name("Authorization-refresh")
-                                .description("Refresh Token: Authorization-refresh 헤더에 Bearer {refreshToken}"));
+                                .description("Access Token: Authorization 헤더에 Bearer {accessToken}"));
 
         return new OpenAPI()
                 .components(components)

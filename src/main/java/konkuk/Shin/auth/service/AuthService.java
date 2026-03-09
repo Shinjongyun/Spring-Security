@@ -2,12 +2,15 @@ package konkuk.Shin.auth.service;
 
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import konkuk.Shin.auth.controller.dto.response.TokenResponse;
 import konkuk.Shin.auth.jwt.service.JwtService;
 import konkuk.Shin.auth.jwt.provider.JwtTokenProvider;
+import konkuk.Shin.auth.security.util.CookieUtil;
 import konkuk.Shin.global.error.BusinessException;
 import konkuk.Shin.global.error.ErrorCode;
 import konkuk.Shin.user.service.UserService;
+import org.springframework.beans.factory.annotation.Value;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,15 +31,18 @@ public class AuthService {
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
 
+    @Value("${jwt.refresh.expiration}")
+    private Long REFRESH_TOKEN_EXPIRED_IN;
+
     @Transactional
-    public void logout(HttpServletRequest request) {
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
         // 엑세스 토큰 추출 후 검증
         String accessToken = jwtTokenProvider.extractAccessToken(request)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ACCESS_TOKEN_NOT_FOUND));
         jwtTokenProvider.validateAccessToken(accessToken);
 
-        // 리프레쉬 토큰 추출 후 검증
-        String refreshToken = jwtTokenProvider.extractRefreshToken(request)
+        // 리프레쉬 토큰 쿠키에서 추출 후 검증
+        String refreshToken = CookieUtil.getRefreshTokenCookie(request)
                 .orElseThrow(() -> new BusinessException(ErrorCode.REFRESH_TOKEN_NOT_FOUND));
         jwtTokenProvider.validateRefreshToken(refreshToken);
 
@@ -44,13 +50,15 @@ public class AuthService {
         jwtService.deleteRefreshToken(refreshToken);
         // 엑세스 토큰 블랙리스트화
         jwtService.invalidAccessToken(accessToken);
+        // 쿠키 삭제
+        CookieUtil.deleteRefreshTokenCookie(response);
     }
 
     @Transactional
-    public TokenResponse reissueTokens(HttpServletRequest request, Long userId) {
+    public TokenResponse reissueTokens(HttpServletRequest request, HttpServletResponse response, Long userId) {
 
-        // 리프레쉬 토큰 추출 후 검증 + Claims 한 번만 파싱
-        String refreshToken = jwtTokenProvider.extractRefreshToken(request)
+        // 리프레쉬 토큰 쿠키에서 추출 후 검증 + Claims 한 번만 파싱
+        String refreshToken = CookieUtil.getRefreshTokenCookie(request)
                 .orElseThrow(() -> new BusinessException(ErrorCode.REFRESH_TOKEN_NOT_FOUND));
         Claims claims = jwtTokenProvider.validateRefreshToken(refreshToken);
 
@@ -66,10 +74,11 @@ public class AuthService {
         jwtService.storeRefreshToken(reissuedRefreshToken, userId);
         // 기존 Refresh Token 폐기
         jwtService.deleteRefreshToken(refreshToken);
+        // 새 Refresh Token 쿠키에 저장
+        CookieUtil.addRefreshTokenCookie(response, reissuedRefreshToken, REFRESH_TOKEN_EXPIRED_IN);
 
         return TokenResponse.builder()
                 .accessToken(reissuedAccessToken)
-                .refreshToken(reissuedRefreshToken)
                 .build();
     }
 
